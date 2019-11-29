@@ -32,31 +32,34 @@ static void response(struct mg_connection *nc, struct http_message *hm, bool sta
 
 }
 
+static void sendPercent(struct mg_connection *nc, struct http_message *hm, double percent) {
+
+	char response[10];
+
+	stringstream ss;
+	ss << fixed << setprecision(2) << percent;
+
+	strcat(response,ss.str().c_str());
+
+	mg_send_head(nc,200,strlen(response), "Content-Type: text/plain");
+	mg_printf(nc, "%s", response);
+
+}
+
 static string cleanText(string token){
 	string response;
 	transform(token.begin(),token.end(),token.begin(),::tolower);
 	for (unsigned char c: token)
 	{
-		cout << int(c) << " ";
 		if (('a' <= c && c<= 'z')){
 			response+=c;
-		}else if (c == 225){
-			response+='a';
-		}else if (c == 233){
-			response+='e';
-		}else if (c == 237){
-			response+='i';
-		}else if (c == 243){
-			response+='o';
-		}else if (c == 250){
-			response+='u';
-		}else if (c == 241){
-			response+='n';
 		}
 	}
 	return response;
 }
 
+const int n_servers = 3;
+size_t len_reply;
 
 static void ev_handler(struct mg_connection *nc, int ev, void *p) {
  	struct http_message *hm = (struct http_message *) p;
@@ -64,32 +67,82 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 		if (mg_vcmp(&hm->uri, "/sendFile") == 0) { 
 				
 			char fileName[100];
-			char ip1[20];
-			char ip2[20];
-			char ip3[20];
+			char ips[n_servers][20];
 
 			mg_get_http_var(&hm->body, "fileName", fileName,sizeof(fileName));
-			mg_get_http_var(&hm->body, "ip1", ip1,sizeof(ip1));
-			mg_get_http_var(&hm->body, "ip2", ip2,sizeof(ip2));
-			mg_get_http_var(&hm->body, "ip3", ip3,sizeof(ip3));
+			mg_get_http_var(&hm->body, "ip1", ips[0],sizeof(ips[0]));
+			mg_get_http_var(&hm->body, "ip2", ips[1],sizeof(ips[1]));
+			mg_get_http_var(&hm->body, "ip3", ips[2],sizeof(ips[2]));
 
 			string nameFile = string("www/textos/")+fileName;
 
 			cout << "Se abrira: " << nameFile << endl;
 
-		
 		    Request r;
 
-	
 		    ifstream input(nameFile);
 		    string token;
+		    vector<string> libro;
+		    int pos = 0;
 		    while(input >> token){
 		    	token = cleanText(token);
-		    	cout << token << endl;
+		    	if(token.size()) libro.push_back(token);
 		    }
-		    
+		    vector<string> partes;
+		    string parte_actual;
+		    for(const string & word : libro){
+		    	if(parte_actual.size() + word.size() > BUFFERT){
+		    		partes.push_back(parte_actual);
+		    		parte_actual = "";
+		    	}
+		    	parte_actual += word;
+		    }
+		    if(parte_actual.size()){
+		    	partes.push_back(parte_actual);
+		    }
 
-		response(nc, hm, true); 
+
+		    vector<int> disponibles;
+
+		    for (int i = 0; i < n_servers; ++i)
+		    {
+		    	try{
+					char response =	*r.doOperation(ips[i],7777,Message::allowedOperations::newbook,NULL,0,len_reply);
+					disponibles.push_back(i);
+		    	}catch(const char *msg){
+		    		//
+		    	}	
+
+		    }
+
+		    int tam = libro.size() / disponibles.size();
+
+		    int contador = 0;
+
+		    if (disponibles.size() != 0)
+		    {
+		    	for(int i:disponibles)
+			    {
+			    	for(const string & parte : partes){
+			    		char response = *r.doOperation(ips[i],7777,Message::allowedOperations::book,(char*)parte.c_str(),parte.size()+1,len_reply);
+			    	}
+			    }
+			    for(int i = 0; i < disponibles.size(); ++i){
+			    	int who = disponibles[i];
+			    	int left = tam * i;
+			    	int right = left + tam - 1;
+			    	if(i == (int)disponibles.size()-1){
+			    		right += libro.size() % disponibles.size();
+			    	}
+			    	int indices[2] = {left, right};
+			    	int response = *(int*)r.doOperation(ips[who],7777,Message::allowedOperations::count,(char*)indices,sizeof(indices),len_reply);
+			    	contador += response;
+			    }
+			    double percent = 100 * (1 - (double)contador / libro.size());
+			    sendPercent(nc, hm, percent); 
+		    }else{
+		    	response(nc, hm, false); 
+		    }
 
 		}else{
 			mg_serve_http(nc, (struct http_message *) p, s_http_server_opts);
