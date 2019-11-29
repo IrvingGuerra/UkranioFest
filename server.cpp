@@ -5,6 +5,28 @@ using namespace std;
 #include "Reply.h"
 #include "Message.h"
 
+string clearText(const string & s){
+	string ans;
+	for(unsigned char c : s){
+		if('a' <= c && c <= 'z'){
+			ans += c;
+		}else if(c == 225) {
+			ans += 'a';
+		}else if(c == 233){
+			ans += 'e';
+		}else if(c == 237){
+			ans += 'i';
+		}else if(c == 243){
+			ans += 'o';
+		}else if(c == 250){
+			ans += 'u';
+		}else if(c == 241){
+			ans += 'n';
+		}
+	}
+	return ans;
+}
+
 int main(int argc, char *argv[])
 {
 	Message *msg;
@@ -19,6 +41,7 @@ int main(int argc, char *argv[])
 	int i = 0;
 	while (input >> token)
 	{
+		token = clearText(token);
 		if (i >= 4 && i % 4 == 0)
 		{
 			t.InsertWord(token);
@@ -26,6 +49,7 @@ int main(int argc, char *argv[])
 		}
 		i++;
 	}
+	return 0;
 	while (1)
 	{
 		msg = archivo.getRequest();
