@@ -1,39 +1,36 @@
-#include <bits/stdc++.h>
+#include "Trie.h"
 using namespace std;
 
-struct Node{
-  	bool isWord = false;
-	unordered_map<char, Node*> letters;
-};
+Trie::Trie()
+{
+	root = new Node();
+}
 
-struct Trie{
-	Node* root;
+inline bool Trie::exists(Node *actual, const char &c)
+{
+	return actual->letters.find(c) != actual->letters.end();
+}
 
-	Trie(){
-		root = new Node();
+void Trie::InsertWord(const string &word)
+{
+	Node *current = root;
+	for (auto &c : word)
+	{
+		if (!exists(current, c))
+			current->letters[c] = new Node();
+		current = current->letters[c];
 	}
+	current->isWord = true;
+}
 
-	inline bool exists(Node * actual, const char & c){
-		return actual->letters.find(c) != actual->letters.end();
+bool Trie::FindWord(const string &word)
+{
+	Node *current = root;
+	for (auto &c : word)
+	{
+		if (!exists(current, c))
+			return false;
+		current = current->letters[c];
 	}
-
-	void InsertWord(const string& word){
-		Node* current = root;
-		for(auto & c : word){
-			if(!exists(current, c))
-				current->letters[c] = new Node();
-			current = current->letters[c];
-		}
-		current->isWord = true;
-	}
-
-	bool FindWord(const string& word){
-		Node* current = root;
-		for(auto & c : word){
-			if(!exists(current, c))
-				return false;
-			current = current->letters[c];
-		}
-		return current->isWord;
-	}
-};
+	return current->isWord;
+}
