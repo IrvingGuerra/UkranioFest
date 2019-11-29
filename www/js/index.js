@@ -12,10 +12,10 @@ function start() {
 		    url: '/sendFile',
 		    data: {
 				fileName: fileName,
-				ip1: "192.168.0.6",
+				ip1: "192.168.0.7",
 				ip2: "192.168.0.2",
-				ip3: "192.168.0.4",
-				ip4: "192.168.0.11"
+				ip3: "192.168.0.3",
+				ip4: "192.168.0.8"
 			},
 		    success: function(data){
 		    	data = data.split('-');

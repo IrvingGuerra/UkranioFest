@@ -20,7 +20,7 @@ function closeModal() {
 //Funciones para alertas pequeñas
 function showAlert(id,color,text) {
 	desplazaA('body');
-	//$('#alertas').html(""); //Limpiamos el div especializado para alertas
+	$('#alertas').html(""); //Limpiamos el div especializado para alertas
 	$('#alertas').append('<div class="alert '+color+'"></div>');
 	$('.alert').append('<span class="closebtnAlert" onclick="closeAlert();">&times;</span>');
 	$('.alert').append('<label>'+text+'</label>');

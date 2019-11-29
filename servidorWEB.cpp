@@ -75,7 +75,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 
 			string nameFile = string("www/textos/")+fileName;
 
-			cout << "Se abrira: " << nameFile << endl;
+			//cout << "Se abrira: " << nameFile << endl;
 
 		    Request r;
 
@@ -103,14 +103,14 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 		    }
 
 
-		    vector<int> disponibles;
+		    set<int> disponibles;
 
 		    for (int i = 0; i < n_servers; ++i)
 		    {
 		    	try{
-		    		cout << "Enviando a: " << ips[i] << endl;
+		    		//cout << "Enviando a: " << ips[i] << endl;
 					char response =	*r.doOperation(ips[i],PORT,Message::allowedOperations::newbook,NULL,0,len_reply);
-					disponibles.push_back(i);
+					disponibles.insert(i);
 		    	}catch(const char *msg){
 		    		//
 		    	}	
@@ -119,45 +119,66 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 
 		    cout << "Hay " << disponibles.size() << " disponibles" << endl;
 
-		    int tam = libro.size() / disponibles.size();
 
 		    int contador = 0;
 
 		    if (disponibles.size() != 0)
 		    {
-		    	for(int i:disponibles)
+		    	vector<int> bad_hosts;
+		    	for(int who : disponibles)
 			    {
 			    	for(const string & parte : partes){
 			    		try{
-			    			char response = *r.doOperation(ips[i],PORT,Message::allowedOperations::book,(char*)parte.c_str(),parte.size()+1,len_reply);
+			    			char response = *r.doOperation(ips[who],PORT,Message::allowedOperations::book,(char*)parte.c_str(),parte.size()+1,len_reply);
 			    		}catch(const char *msg){
-				    		//
+				    		bad_hosts.push_back(who);
+				    		break;
 				    	}		
 			    	}
 			    }
-			    for(size_t i = 0; i < disponibles.size(); ++i){
-			    	int who = disponibles[i];
-			    	int left = tam * i;
-			    	int right = left + tam - 1;
-			    	if(i == disponibles.size()-1){
-			    		right += libro.size() % disponibles.size();
-			    	}
-			    	int indices[2] = {left, right};
-			    	cout << "left: " << indices[0] << " right: " << indices[1] << endl;
-			    	try{
-			    		int response = *(int*)r.doOperation(ips[who],PORT,Message::allowedOperations::count,(char*)indices,sizeof(indices),len_reply);
-		    			contador += response;
-		    		}catch(const char *msg){
-			    		//
-			    	}
+			    for(int who : bad_hosts){
+			    	disponibles.erase(who);
 			    }
-			    double percent = 100 * ((double)contador / libro.size());
+			    again:
+			    if(disponibles.size() != 0){
+				    int tam = libro.size() / disponibles.size();
+				    size_t i = 0;
+				    auto it = disponibles.begin();
+				    int prev_l = -1;
+				    for(; it != disponibles.end(); ++it, ++i){
+				    	int who = *it;
+				    	int left = tam * i;
+				    	if(prev_l != -1){
+				    		left = prev_l;
+				    	}
+				    	int right = left + tam - 1;
+				    	if(i == disponibles.size()-1){
+				    		right += libro.size() % disponibles.size();
+				    	}
+				    	int indices[2] = {left, right};
+				    	cout << "left: " << indices[0] << " right: " << indices[1] << endl;
+				    	try{
+				    		int response = *(int*)r.doOperation(ips[who],PORT,Message::allowedOperations::count,(char*)indices,sizeof(indices),len_reply);
+			    			contador += response;
+			    			prev_l = -1;
+			    		}catch(const char *msg){
+				    		prev_l = left;
+				    	}
+				    }
+				    if(prev_l != -1){
+			    		//no se pudo
+			    		goto again;
+			    	}
+				    double percent = 100 * ((double)contador / libro.size());
 
-			    chrono::steady_clock::time_point end = chrono::steady_clock::now();
+				    chrono::steady_clock::time_point end = chrono::steady_clock::now();
 
-			    int tiempo = chrono::duration_cast<chrono::milliseconds>(end-begin).count();
+				    int tiempo = chrono::duration_cast<chrono::milliseconds>(end-begin).count();
 
-			    sendPercent(nc, hm, percent, tiempo); 
+				    sendPercent(nc, hm, percent, tiempo); 
+				}else{
+					response(nc, hm, false);
+				}
 		    }else{
 		    	response(nc, hm, false); 
 		    }
