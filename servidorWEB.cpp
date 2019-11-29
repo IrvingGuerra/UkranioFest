@@ -56,7 +56,6 @@ static string cleanText(string token){
 	return response;
 }
 
-const int n_servers = 4;
 size_t len_reply;
 
 static void ev_handler(struct mg_connection *nc, int ev, void *p) {
@@ -64,6 +63,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 	if (ev == MG_EV_HTTP_REQUEST) {
 		if (mg_vcmp(&hm->uri, "/sendFile") == 0) { 
 				
+			/*	
 			char fileName[100];
 			char ips[n_servers][20];
 
@@ -76,13 +76,36 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 			string nameFile = string("www/textos/")+fileName;
 
 			//cout << "Se abrira: " << nameFile << endl;
-
+*/
+			stringstream ss(hm->body.p);
+			string boundary, line, trash, texto, ips_str, ip;
+			getline(ss, boundary);
+			getline(ss, trash);
+			getline(ss, trash);
+			getline(ss, trash);
+			while(getline(ss, line)){
+				if(line == boundary) break;
+				texto += line + "\n";
+			}
+			getline(ss, trash);
+			getline(ss, trash);
+			getline(ss, ips_str);
+			ss = stringstream(ips_str);
+			vector<string> ips;
+			//cout << texto << "\n";
+			//cout << ips_str << "\n";
+			while(ss >> ip){
+				ips.push_back(ip);
+				//cout << ip << "\n";
+			}
+			const int n_servers = ips.size();
+			
 		    Request r;
 
 		    chrono::steady_clock::time_point begin = chrono::steady_clock::now();
 
 
-		    ifstream input(nameFile);
+		    stringstream input(texto);
 		    string token;
 		    vector<string> libro;
 		    while(input >> token){
