@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <string>
 #include <netinet/in.h>
+#include <sys/time.h>
 #include "DatagramPacket.h"
 
 #ifndef DatagramSocket_H_
