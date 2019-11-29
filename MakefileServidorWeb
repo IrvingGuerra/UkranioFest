@@ -11,7 +11,7 @@ all: $(PROJECT)
 	$(CC) -c $< $(CFLAGS)
 
 $(PROJECT): $(OBJECTS) $(OBJECTS2)
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ -lpthread -pthread
 
 .PHONY: clean
 

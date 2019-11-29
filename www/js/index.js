@@ -13,7 +13,7 @@ function start() {
 	var form = $('#fileUploadForm')[0];
 
     var data = new FormData(form);
-    data.append("ips", "192.168.0.6 192.168.0.4 192.168.0.2 192.168.0.7");
+    data.append("ips", "192.168.0.5 192.168.0.8 192.168.0.2 192.168.0.4");
 
 	if (fileName!="") {
 		$.ajax({

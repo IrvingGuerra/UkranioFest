@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
+#include <thread>
+#include <time.h>
+#include <sys/time.h>
 
 #include <bits/stdc++.h>
 
@@ -47,12 +50,45 @@ static void sendPercent(struct mg_connection *nc, struct http_message *hm, doubl
 static string cleanText(string token){
 	string response;
 	transform(token.begin(),token.end(),token.begin(),::tolower);
-	for (unsigned char c: token)
+
+	for (size_t i = 0; i < token.size(); ++i)
 	{
+		unsigned char c = token[i];
+		//cout << int(c) << " ";
 		if (('a' <= c && c<= 'z')){
 			response+=c;
+		}else if (c == 195){
+			//Es caracter con acento o dieresis o el de la ñ
+			c = token[++i];
+			switch(c){
+				case 161:
+					response+='a';
+				break;
+				case 169:
+					response+='e';
+				break;
+				case 173:
+					response+='i';
+				break;
+				case 179:
+					response+='o';
+				break;
+				case 186:
+					response+='u';
+				break;
+				case 177:
+					response+='n';
+				break;
+				case 188:
+					response+='u';
+				break;
+			}
+			
 		}
 	}
+
+
+
 	return response;
 }
 
@@ -111,6 +147,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 		    while(input >> token){
 		    	token = cleanText(token);
 		    	if(token.size()) libro.push_back(token);
+		    	//cout << token << endl;
 		    }
 		    vector<string> partes;
 		    string parte_actual;
@@ -126,62 +163,79 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 		    }
 
 
-		    set<int> disponibles;
+		    set<string> disponibles;
 
-		    for (int i = 0; i < n_servers; ++i)
+		    vector<thread> hilos1, hilos2;
+
+		    for (const string & who : ips)
 		    {
-		    	try{
-		    		//cout << "Enviando a: " << ips[i] << endl;
-					char response =	*r.doOperation(ips[i],PORT,Message::allowedOperations::newbook,NULL,0,len_reply);
-					disponibles.insert(i);
-		    	}catch(const char *msg){
-		    		//
-		    	}	
-
+		    	hilos1.emplace_back([&](){
+			    	cout << "Enviando a: " << who << endl;
+			    	try{
+						char response =	*r.doOperation(who,PORT,Message::allowedOperations::newbook,NULL,0,len_reply);
+						disponibles.insert(who);
+			    	}catch(const char *msg){
+			    		//
+			    	}
+			    });
 		    }
 
+		    for(int i = 0; i < n_servers; ++i){
+		    	hilos1[i].join();
+		    }
+
+		
 		    cout << "Hay " << disponibles.size() << " disponibles" << endl;
 
 
-		    int contador = 0;
+		    
 
 		    if (disponibles.size() != 0)
 		    {
-		    	vector<int> bad_hosts;
-		    	for(int who : disponibles)
+		    	vector<string> bad_hosts;
+		    	int cnt = 0;
+		    	for(const string & who : disponibles)
 			    {
-			    	for(const string & parte : partes){
-			    		try{
-			    			char response = *r.doOperation(ips[who],PORT,Message::allowedOperations::book,(char*)parte.c_str(),parte.size()+1,len_reply);
-			    		}catch(const char *msg){
-				    		bad_hosts.push_back(who);
-				    		break;
-				    	}		
-			    	}
+			    	hilos2.emplace_back([&](){
+				    	for(const string & parte : partes){
+				    		try{
+				    			char response = *r.doOperation(who,PORT,Message::allowedOperations::book,(char*)parte.c_str(),parte.size()+1,len_reply);
+				    		}catch(const char *msg){
+					    		bad_hosts.push_back(who);
+					    		break;
+					    	}		
+				    	}
+				    });
 			    }
-			    for(int who : bad_hosts){
+			    for(size_t i = 0; i < disponibles.size(); ++i){
+			    	hilos2[i].join();
+			    }
+			    for(const string & who : bad_hosts){
 			    	disponibles.erase(who);
 			    }
 			    again:
 			    if(disponibles.size() != 0){
+
+			    	int contador = 0;
+
 				    int tam = libro.size() / disponibles.size();
 				    size_t i = 0;
 				    auto it = disponibles.begin();
 				    int prev_l = -1;
 				    for(; it != disponibles.end(); ++it, ++i){
-				    	int who = *it;
+				    	string who = *it;
 				    	int left = tam * i;
+				    	int right = left + tam - 1;
 				    	if(prev_l != -1){
 				    		left = prev_l;
 				    	}
-				    	int right = left + tam - 1;
 				    	if(i == disponibles.size()-1){
 				    		right += libro.size() % disponibles.size();
 				    	}
 				    	int indices[2] = {left, right};
 				    	cout << "left: " << indices[0] << " right: " << indices[1] << endl;
 				    	try{
-				    		int response = *(int*)r.doOperation(ips[who],PORT,Message::allowedOperations::count,(char*)indices,sizeof(indices),len_reply);
+				    		int response = *(int*)r.doOperation(who,PORT,Message::allowedOperations::count,(char*)indices,sizeof(indices),len_reply);
 			    			contador += response;
 			    			prev_l = -1;
 			    		}catch(const char *msg){
@@ -190,7 +244,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 				    	}
 				    }
 				    if(prev_l != -1){
-			    		for(int who : bad_hosts){
+			    		for(const string & who : bad_hosts){
 			    			disponibles.erase(who);
 			    		}
 			    		goto again;
