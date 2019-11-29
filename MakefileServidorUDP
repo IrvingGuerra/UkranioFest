@@ -1,0 +1,9 @@
+all: server
+
+server: server.cpp DatagramSocket.cpp DatagramPacket.cpp trie.cpp Request.cpp Reply.cpp
+	g++ server.cpp DatagramSocket.cpp DatagramPacket.cpp trie.cpp Request.cpp Reply.cpp -o server -Wall
+
+.PHONY: clean
+
+clean:
+	rm -rf *.o *.out *.exe

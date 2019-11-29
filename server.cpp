@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 		msg = archivo.getRequest();
 		if (msg->operationId == Message::allowedOperations::book)
 		{
-			//cerr << "Got a new request of type 'book'\n";
+			cerr << "Got a new request of type 'book'\n";
 			string seccionbook(msg->arguments);
 			stringstream s(seccionbook);
 			string palabra;
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 		}
 		else if (msg->operationId == Message::allowedOperations::count)
 		{
-			//cerr << "Got a new request of type 'count'\n";
+			cerr << "Got a new request of type 'count'\n";
 			int *indices = (int*)msg->arguments;
 			int contador = 0;
 			for (int i= indices[0]; i<=indices[1]; i++){
