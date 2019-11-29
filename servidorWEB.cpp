@@ -95,7 +95,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 		    		partes.push_back(parte_actual);
 		    		parte_actual = "";
 		    	}
-		    	parte_actual += word;
+		    	parte_actual += word + " ";
 		    }
 		    if(parte_actual.size()){
 		    	partes.push_back(parte_actual);
@@ -141,7 +141,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 			    		right += libro.size() % disponibles.size();
 			    	}
 			    	int indices[2] = {left, right};
-
+			    	cout << "left: " << indices[0] << " right: " << indices[1] << endl;
 			    	try{
 			    		int response = *(int*)r.doOperation(ips[who],7777,Message::allowedOperations::count,(char*)indices,sizeof(indices),len_reply);
 		    			contador += response;
@@ -149,7 +149,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 			    		//
 			    	}
 			    }
-			    double percent = 100 * (1 - (double)contador / libro.size());
+			    double percent = 100 * ((double)contador / libro.size());
 			    sendPercent(nc, hm, percent); 
 		    }else{
 		    	response(nc, hm, false); 

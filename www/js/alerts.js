@@ -26,7 +26,7 @@ function showAlert(id,color,text) {
 	$('.alert').append('<label>'+text+'</label>');
 	$('.alert').addClass(color);
 	$('.alert').fadeIn();
-	setTimeout(function () {$('.alert').fadeOut();}, 2000);
+	//setTimeout(function () {$('.alert').fadeOut();}, 2000);
 }
 function closeAlert(){
 	$('.alert').fadeOut();

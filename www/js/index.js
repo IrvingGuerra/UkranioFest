@@ -12,12 +12,12 @@ function start() {
 		    url: '/sendFile',
 		    data: {
 				fileName: fileName,
-				ip1: "192.168.0.5",
+				ip1: "192.168.0.2",
 				ip2: "192.168.0.6",
-				ip3: "192.168.0.7"
+				ip3: "192.168.0.3"
 			},
 		    success: function(data){
-		        alert(data);
+		        showAlert('RES','verde','El porcentaje fue: '+data);
 		    }
 		});
 	}	
