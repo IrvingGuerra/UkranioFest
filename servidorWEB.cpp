@@ -1,8 +1,12 @@
 #define MG_ENABLE_HTTP_STREAMING_MULTIPART 1
 #include "mongoose.h"
+#include "Request.h"
+#include "Reply.h"
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
+
+#include <bits/stdc++.h>
 
 #define BUFFERT 512
 
@@ -14,7 +18,7 @@ static struct mg_serve_http_opts s_http_server_opts;
 
 static void response(struct mg_connection *nc, struct http_message *hm, bool status) {
 
-	char response[5];
+	char response[10];
 
 	if (status == true)
 	{
@@ -28,70 +32,69 @@ static void response(struct mg_connection *nc, struct http_message *hm, bool sta
 
 }
 
+static string cleanText(string token){
+	string response;
+	transform(token.begin(),token.end(),token.begin(),::tolower);
+	for (unsigned char c: token)
+	{
+		cout << int(c) << " ";
+		if (('a' <= c && c<= 'z')){
+			response+=c;
+		}else if (c == 225){
+			response+='a';
+		}else if (c == 233){
+			response+='e';
+		}else if (c == 237){
+			response+='i';
+		}else if (c == 243){
+			response+='o';
+		}else if (c == 250){
+			response+='u';
+		}else if (c == 241){
+			response+='n';
+		}
+	}
+	return response;
+}
+
 
 static void ev_handler(struct mg_connection *nc, int ev, void *p) {
  	struct http_message *hm = (struct http_message *) p;
 	if (ev == MG_EV_HTTP_REQUEST) {
 		if (mg_vcmp(&hm->uri, "/sendFile") == 0) { 
 				
-			char fileName[20];
+			char fileName[100];
+			char ip1[20];
+			char ip2[20];
+			char ip3[20];
 
 			mg_get_http_var(&hm->body, "fileName", fileName,sizeof(fileName));
+			mg_get_http_var(&hm->body, "ip1", ip1,sizeof(ip1));
+			mg_get_http_var(&hm->body, "ip2", ip2,sizeof(ip2));
+			mg_get_http_var(&hm->body, "ip3", ip3,sizeof(ip3));
 
-			printf("Se enviara file: %s\n", fileName);
-			
-			int fd;
-		    char buf[BUFFERT];
-		    off_t count = 0, m; //long
-		    bzero(&buf,BUFFERT);
-		    long int n;
+			string nameFile = string("www/textos/")+fileName;
 
-		    if ((fd = open(fileName,O_RDONLY))==-1){
-		        perror("Error al abrir la imagen");
-		        return EXIT_FAILURE;
-		    }else{
-		    	//El archivo existe
-		    	for (int i = 0; i < 3; ++i){
-		    		//Se envia a 3 PC
-		    		n = read(fd,buf,BUFFERT);
-			    	char temp_buf [1];
-			    	while(n){
-				        if(n==-1){
-				            perror("Error al leer la transmicion");
-				            return EXIT_FAILURE;
-				        }
+			cout << "Se abrira: " << nameFile << endl;
 
+		
+		    Request r;
 
-				        /*
-				        m = sendto(s,buf,n,0,(struct sockaddr*)&direccionForanea,longitudForanea);
-
-				        if( m == -1 ){
-				            perror("Error al enviar el archivo");
-				            return EXIT_FAILURE;
-				        }
-
-				        //Verificamos que el paquete le llego
-
-				        recvfrom(s,&temp_buf,1,0,(struct sockaddr *)&direccionForanea,&longitudForanea);
-
-				        if (temp_buf[0] == 't'){
-				            //Si se envio el paquete correctamente, se envia el sig pedazo
-				            count += m;
-				            bzero(buf,BUFFERT);
-				            n = read(fd,buf,BUFFERT);
-				        }else{
-				            std::cout << "[ FAIL ] " << std::tab  << "Reenviando pedazo: " << count << std::endl;
-				        }
-				        */
-				    }
-				    //Desbloqueamos el server enviando un 0
-		    	}
+	
+		    ifstream input(nameFile);
+		    string token;
+		    while(input >> token){
+		    	token = cleanText(token);
+		    	cout << token << endl;
 		    }
-		    //response(nc, hm, true);  
+		    
+
+		response(nc, hm, true); 
 
 		}else{
 			mg_serve_http(nc, (struct http_message *) p, s_http_server_opts);
 		}
+		
 	}
 
 }
