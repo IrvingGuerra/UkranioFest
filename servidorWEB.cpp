@@ -32,14 +32,26 @@ static void response(struct mg_connection *nc, struct http_message *hm, bool sta
 
 }
 
-static wstring cleanText(wstring token){
-	wstring response;
+static string cleanText(string token){
+	string response;
 	transform(token.begin(),token.end(),token.begin(),::tolower);
-	for (wchar_t c: token)
+	for (unsigned char c: token)
 	{
-		if (('a' <= c && c<= 'z')||('é' <= c && c<= 'ñ'))
-		{
+		cout << int(c) << " ";
+		if (('a' <= c && c<= 'z')){
 			response+=c;
+		}else if (c == 225){
+			response+='a';
+		}else if (c == 233){
+			response+='e';
+		}else if (c == 237){
+			response+='i';
+		}else if (c == 243){
+			response+='o';
+		}else if (c == 250){
+			response+='u';
+		}else if (c == 241){
+			response+='n';
 		}
 	}
 	return response;
@@ -51,7 +63,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 	if (ev == MG_EV_HTTP_REQUEST) {
 		if (mg_vcmp(&hm->uri, "/sendFile") == 0) { 
 				
-			char fileName[20];
+			char fileName[100];
 			char ip1[20];
 			char ip2[20];
 			char ip3[20];
@@ -61,61 +73,28 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 			mg_get_http_var(&hm->body, "ip2", ip2,sizeof(ip2));
 			mg_get_http_var(&hm->body, "ip3", ip3,sizeof(ip3));
 
-			printf("Se enviara file: %s\n", fileName);
-			
-			/*
-			int fd;
-		    char buf[BUFFERT];
-		    off_t count = 0, m; //long
-		    bzero(&buf,BUFFERT);
-		    long int n;
+			string nameFile = string("www/textos/")+fileName;
 
-*/
+			cout << "Se abrira: " << nameFile << endl;
+
+		
 		    Request r;
 
-		    wifstream input(string("www/textos")+fileName);
-		    wstring token;
-
+	
+		    ifstream input(nameFile);
+		    string token;
 		    while(input >> token){
 		    	token = cleanText(token);
-		    	wcout << token << endl;
+		    	cout << token << endl;
 		    }
+		    
 
-
-/*
-
-		    if ((fd = open(fileName,O_RDONLY))==-1){
-		        perror("Error al abrir la imagen");
-		        return EXIT_FAILURE;
-		    }else{
-		    	//El archivo existe
-		    	for (int i = 0; i < 3; ++i){
-		    		//Se envia a 3 PC
-		    		n = read(fd,buf,BUFFERT);
-			    	char temp_buf [1];
-			    	while(n){
-				        if(n==-1){
-				            perror("Error al leer la transmicion");
-				            return EXIT_FAILURE;
-				        }
-				        r.doOperation(ip, "8888",
-                                   Message::allowedOperations::registerVote,
-                                   (char *)reg, sizeof(registro), len_reply);
-
-				    }
-				    //Desbloqueamos el server enviando un 0
-		    	}
-		    }
-		    //response(nc, hm, true);  
+		response(nc, hm, true); 
 
 		}else{
 			mg_serve_http(nc, (struct http_message *) p, s_http_server_opts);
 		}
-
-		*/
-
-		    response(nc, hm, true); 
-		}
+		
 	}
 
 }

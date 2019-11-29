@@ -11,7 +11,7 @@ function start() {
 			type: 'POST',
 		    url: '/sendFile',
 		    data: {
-				fileName: fileName
+				fileName: fileName,
 				ip1: "192.168.0.1",
 				ip2: "192.168.0.1",
 				ip3: "192.168.0.1"
