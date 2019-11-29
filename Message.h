@@ -6,7 +6,7 @@
 class Message {
 	public:
 		enum kindMessages: int {request, reply};
-		enum allowedOperations: int {sum, transfer, getBalance, registerVote, getTime};
+		enum allowedOperations: int {book, count, newbook};
 
 		Message::kindMessages messageType;    
 		uint64_t requestId;
