@@ -13,22 +13,19 @@
 	<audio id="error" src="sounds/error.wav" type="audio/wav"></audio>
 	<audio src="sounds/index.wav" type="audio/wav" autoplay loop preload="auto"></audio>
 	<div class="contenido">
-		<div id="alertas"></div>
 		<div class="container">
 			<h1>UKRANIO FEST 2019</h1>
 			<label>SELECCIONE EL ARCHIVO A ANALIZAR</label><br>
 			<input id="file-input" type="file" name="name"><br><br>
-			<button class="btn" onclick="joinGame('solo');">ANALIZAR</button><br><br>
+			<button class="btn" onclick="start()">ANALIZAR</button><br><br>
 
-			<div class="respuesta">
-				
-			</div>
+			<div id="alertas"></div>
+			
 		</div>
 	</div>
 
 	<script type="text/javascript" src="js/jquery-3.4.1.js"></script>
-	<script src="js/cookies.js"></script>
 	<script src="js/alerts.js"></script>
-	<script src="js/configure.js"></script>
+	<script src="js/index.js"></script>
 </body>
 </html>
