@@ -115,6 +115,8 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 
 		    }
 
+		    cout << "Hay " << disponibles.size() << " disponibles" << endl;
+
 		    int tam = libro.size() / disponibles.size();
 
 		    int contador = 0;
@@ -124,7 +126,11 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 		    	for(int i:disponibles)
 			    {
 			    	for(const string & parte : partes){
-			    		char response = *r.doOperation(ips[i],7777,Message::allowedOperations::book,(char*)parte.c_str(),parte.size()+1,len_reply);
+			    		try{
+			    			char response = *r.doOperation(ips[i],7777,Message::allowedOperations::book,(char*)parte.c_str(),parte.size()+1,len_reply);
+			    		}catch(const char *msg){
+				    		//
+				    	}		
 			    	}
 			    }
 			    for(int i = 0; i < disponibles.size(); ++i){
@@ -135,8 +141,13 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 			    		right += libro.size() % disponibles.size();
 			    	}
 			    	int indices[2] = {left, right};
-			    	int response = *(int*)r.doOperation(ips[who],7777,Message::allowedOperations::count,(char*)indices,sizeof(indices),len_reply);
-			    	contador += response;
+
+			    	try{
+			    		int response = *(int*)r.doOperation(ips[who],7777,Message::allowedOperations::count,(char*)indices,sizeof(indices),len_reply);
+		    			contador += response;
+		    		}catch(const char *msg){
+			    		//
+			    	}
 			    }
 			    double percent = 100 * (1 - (double)contador / libro.size());
 			    sendPercent(nc, hm, percent); 

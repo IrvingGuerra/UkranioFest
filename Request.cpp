@@ -25,17 +25,17 @@ char* Request::doOperation(const std::string addr, uint16_t iport, Message::allo
 	Message *msg2 = new Message();
 	DatagramPacket pqresp((char*)msg2, sizeof(Message));
 	int i;
-	for (i = 0; i < 7; i++) {
+	for (i = 0; i < 2; i++) {
 		try {
 			sock.send(pq);
-			sock.receiveTimeout(pqresp, 3, 0);
+			sock.receiveTimeout(pqresp, 2, 0);
 			if (msg2->requestId != msg->requestId) continue;
 			break;
 		} catch(const char* msg) {
 			std::cerr << msg << '\n';
 		}
 	}
-	if(i == 7) {
+	if(i == 2) {
 		len_reply = 0;
 		throw "All attempts failed, server not available";
 	}
