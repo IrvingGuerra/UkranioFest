@@ -76,6 +76,7 @@ int main(int argc, char *argv[])
 			int contador = 0;
 			for (int i= indices[0]; i<=indices[1]; i++){
 				contador+= t.FindWord(libro[i]);
+				if(t.FindWord(libro[i])) cerr << libro[i] << "\n";
 			}
 			archivo.sendReply((char *)&contador, sizeof(contador));
 		}
