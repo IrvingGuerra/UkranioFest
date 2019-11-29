@@ -10,6 +10,8 @@
 
 #define BUFFERT 512
 
+#define PORT 7778
+
 using namespace std;
 
 static const char *s_http_port = "8000";
@@ -32,17 +34,13 @@ static void response(struct mg_connection *nc, struct http_message *hm, bool sta
 
 }
 
-static void sendPercent(struct mg_connection *nc, struct http_message *hm, double percent) {
+static void sendPercent(struct mg_connection *nc, struct http_message *hm, double percent, int tiempo) {
 
-	char response[10];
+	char res[20];
+	sprintf(res, "%0.2f-%d", percent, tiempo);
 
-	stringstream ss;
-	ss << fixed << setprecision(2) << percent;
-
-	strcat(response,ss.str().c_str());
-
-	mg_send_head(nc,200,strlen(response), "Content-Type: text/plain");
-	mg_printf(nc, "%s", response);
+	mg_send_head(nc,200,strlen(res), "Content-Type: text/plain");
+	mg_printf(nc, "%s", res);
 
 }
 
@@ -58,7 +56,7 @@ static string cleanText(string token){
 	return response;
 }
 
-const int n_servers = 3;
+const int n_servers = 4;
 size_t len_reply;
 
 static void ev_handler(struct mg_connection *nc, int ev, void *p) {
@@ -73,6 +71,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 			mg_get_http_var(&hm->body, "ip1", ips[0],sizeof(ips[0]));
 			mg_get_http_var(&hm->body, "ip2", ips[1],sizeof(ips[1]));
 			mg_get_http_var(&hm->body, "ip3", ips[2],sizeof(ips[2]));
+			mg_get_http_var(&hm->body, "ip4", ips[3],sizeof(ips[3]));
 
 			string nameFile = string("www/textos/")+fileName;
 
@@ -80,10 +79,12 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 
 		    Request r;
 
+		    chrono::steady_clock::time_point begin = chrono::steady_clock::now();
+
+
 		    ifstream input(nameFile);
 		    string token;
 		    vector<string> libro;
-		    int pos = 0;
 		    while(input >> token){
 		    	token = cleanText(token);
 		    	if(token.size()) libro.push_back(token);
@@ -107,7 +108,8 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 		    for (int i = 0; i < n_servers; ++i)
 		    {
 		    	try{
-					char response =	*r.doOperation(ips[i],7777,Message::allowedOperations::newbook,NULL,0,len_reply);
+		    		cout << "Enviando a: " << ips[i] << endl;
+					char response =	*r.doOperation(ips[i],PORT,Message::allowedOperations::newbook,NULL,0,len_reply);
 					disponibles.push_back(i);
 		    	}catch(const char *msg){
 		    		//
@@ -127,30 +129,35 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 			    {
 			    	for(const string & parte : partes){
 			    		try{
-			    			char response = *r.doOperation(ips[i],7777,Message::allowedOperations::book,(char*)parte.c_str(),parte.size()+1,len_reply);
+			    			char response = *r.doOperation(ips[i],PORT,Message::allowedOperations::book,(char*)parte.c_str(),parte.size()+1,len_reply);
 			    		}catch(const char *msg){
 				    		//
 				    	}		
 			    	}
 			    }
-			    for(int i = 0; i < disponibles.size(); ++i){
+			    for(size_t i = 0; i < disponibles.size(); ++i){
 			    	int who = disponibles[i];
 			    	int left = tam * i;
 			    	int right = left + tam - 1;
-			    	if(i == (int)disponibles.size()-1){
+			    	if(i == disponibles.size()-1){
 			    		right += libro.size() % disponibles.size();
 			    	}
 			    	int indices[2] = {left, right};
 			    	cout << "left: " << indices[0] << " right: " << indices[1] << endl;
 			    	try{
-			    		int response = *(int*)r.doOperation(ips[who],7777,Message::allowedOperations::count,(char*)indices,sizeof(indices),len_reply);
+			    		int response = *(int*)r.doOperation(ips[who],PORT,Message::allowedOperations::count,(char*)indices,sizeof(indices),len_reply);
 		    			contador += response;
 		    		}catch(const char *msg){
 			    		//
 			    	}
 			    }
 			    double percent = 100 * ((double)contador / libro.size());
-			    sendPercent(nc, hm, percent); 
+
+			    chrono::steady_clock::time_point end = chrono::steady_clock::now();
+
+			    int tiempo = chrono::duration_cast<chrono::milliseconds>(end-begin).count();
+
+			    sendPercent(nc, hm, percent, tiempo); 
 		    }else{
 		    	response(nc, hm, false); 
 		    }
