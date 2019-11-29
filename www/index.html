@@ -15,7 +15,9 @@
 			<h1>UKRANIO FEST 2019</h1>
 			<label>SELECCIONE EL ARCHIVO A ANALIZAR</label><br>
 			<input type="file" name="Att_AttributeID" onchange="fileSelect(event)"><br><br>
-			<button class="btn" onclick="start()">ANALIZAR</button><br><br>
+			<button id="btnAnalizar" class="btn" onclick="start()">ANALIZAR</button><br><br>
+
+			<img id="loaderImg" src="img/loader.gif">
 
 			<div id="alertas">
 				

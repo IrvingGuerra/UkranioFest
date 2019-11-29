@@ -6,6 +6,8 @@ function fileSelect(event){
 }
 
 function start() {
+	$('#btnAnalizar').fadeOut();
+	$('#loaderImg').fadeIn();
 	if (fileName!="") {
 		$.ajax({
 			type: 'POST',
@@ -15,11 +17,13 @@ function start() {
 				ip1: "192.168.0.7",
 				ip2: "192.168.0.2",
 				ip3: "192.168.0.3",
-				ip4: "192.168.0.8"
+				ip4: "192.168.0.6"
 			},
 		    success: function(data){
 		    	data = data.split('-');
 		        showAlert('RES','verde','El porcentaje fue: '+data[0] + '% con tiempo de '+data[1]+'ms.');
+		    	$('#btnAnalizar').fadeIn();
+		    	$('#loaderImg').fadeOut();
 		    }
 		});
 	}	

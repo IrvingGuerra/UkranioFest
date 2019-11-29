@@ -61,6 +61,11 @@ input[type=text]:focus {
 	margin: 0 auto;
 	margin-bottom: 50px;
 }
+.container img{
+	width: 150px;
+	display: none;
+}
+
 
 .btnFormal{
 	background-color: green;
