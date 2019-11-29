@@ -163,10 +163,13 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 			    			prev_l = -1;
 			    		}catch(const char *msg){
 				    		prev_l = left;
+				    		bad_hosts.push_back(who);
 				    	}
 				    }
 				    if(prev_l != -1){
-			    		//no se pudo
+			    		for(int who : bad_hosts){
+			    			disponibles.erase(who);
+			    		}
 			    		goto again;
 			    	}
 				    double percent = 100 * ((double)contador / libro.size());
