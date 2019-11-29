@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"> 
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+	<link rel="stylesheet" type="text/css" href="css/styles.css">
+	<link rel="stylesheet" type="text/css" href="css/alerts.css">
+	<title>UkranioFest</title>
+</head>
+<body id="body">
+	<audio id="beep" src="sounds/beep.wav" type="audio/wav"></audio>
+	<audio id="error" src="sounds/error.wav" type="audio/wav"></audio>
+	<audio src="sounds/index.wav" type="audio/wav" autoplay loop preload="auto"></audio>
+	<div class="contenido">
+		<div id="alertas"></div>
+		<div class="container">
+			<h1>UKRANIO FEST 2019</h1>
+			<label>SELECCIONE EL ARCHIVO A ANALIZAR</label><br>
+			<input id="file-input" type="file" name="name"><br><br>
+			<button class="btn" onclick="joinGame('solo');">ANALIZAR</button><br><br>
+
+			<div class="respuesta">
+				
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript" src="js/jquery-3.4.1.js"></script>
+	<script src="js/cookies.js"></script>
+	<script src="js/alerts.js"></script>
+	<script src="js/configure.js"></script>
+</body>
+</html>
