@@ -1,3 +1,6 @@
+#include <bits/stdc++.h>
+using namespace std;
+
 struct Node{
   	bool isWord = false;
 	unordered_map<char, Node*> letters;

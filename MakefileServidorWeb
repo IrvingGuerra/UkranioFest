@@ -1,4 +1,4 @@
-PROJECT = servidorWeb.out
+PROJECT = server.out
 CFLAGS = -Wall -std=c++11
 CC = g++ -g3
 EXCLUDED_FILES = test.cpp
