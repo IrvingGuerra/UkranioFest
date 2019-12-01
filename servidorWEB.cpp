@@ -11,9 +11,9 @@
 
 #include <bits/stdc++.h>
 
-#define BUFFERT 512
+#define BUFFERT 1023
 
-#define PORT 7778
+#define PORT 7770
 
 using namespace std;
 
@@ -152,7 +152,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 		    vector<string> partes;
 		    string parte_actual;
 		    for(const string & word : libro){
-		    	if(parte_actual.size() + word.size() > BUFFERT){
+		    	if(parte_actual.size() + word.size() + 1 > BUFFERT){
 		    		partes.push_back(parte_actual);
 		    		parte_actual = "";
 		    	}
@@ -193,7 +193,6 @@ static void ev_handler(struct mg_connection *nc, int ev, void *p) {
 		    if (disponibles.size() != 0)
 		    {
 		    	vector<string> bad_hosts;
-		    	int cnt = 0;
 		    	for(const string & who : disponibles)
 			    {
 			    	hilos2.emplace_back([&](){
